@@ -5,7 +5,7 @@
 //  Created by Andrii Zinoviev on 26.09.2024.
 //
 
-enum ExpressionCharacter {
+enum ExpressionCharacter: Hashable {
     case digit(Int)
     case binop(ExpressionBinop)
     case equals
@@ -30,7 +30,7 @@ struct ExpressionLexer {
         case invalidCharacter(Character)
     }
     
-    private func characters(from string: String) throws -> [ExpressionCharacter] {
+    func characters(string: String) throws -> [ExpressionCharacter] {
         try string.map {
             switch $0 {
             case "0"..."9": .digit(try self.digit(character: $0))
@@ -54,7 +54,7 @@ struct ExpressionLexer {
     }
     
     func tokens(string: String) throws -> [ExpressionToken] {
-        let characters = try self.characters(from: string)
+        let characters = try self.characters(string: string)
         return self.tokens(characters: characters)
     }
     

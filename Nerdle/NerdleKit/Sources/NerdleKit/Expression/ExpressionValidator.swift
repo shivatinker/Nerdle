@@ -13,12 +13,24 @@ enum ExpressionValidator {
         case complete
     }
     
+    static func complete(_ characters: [ExpressionCharacter]) throws -> Int {
+        let tokens = ExpressionLexer().tokens(characters: characters)
+        let topLevel = try ExpressionParser.parse(tokens)
+        return try self.complete(topLevel)
+    }
+    
     static func complete(_ topLevel: ExpressionParser.TopLevel) throws -> Int {
         guard topLevel.rhs == nil else {
             throw Error.complete
         }
         
         return try self.evaluate(topLevel.lhs)
+    }
+    
+    static func validate(_ characters: [ExpressionCharacter]) throws {
+        let tokens = ExpressionLexer().tokens(characters: characters)
+        let topLevel = try ExpressionParser.parse(tokens)
+        try self.validate(topLevel)
     }
     
     static func validate(_ topLevel: ExpressionParser.TopLevel) throws {
