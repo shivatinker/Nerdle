@@ -51,7 +51,7 @@ final class GuessResolverTests: XCTestCase {
         let targetEquation = try Equation(string: target)
         let guessEquation = try Equation(string: guess)
         let resolver = GuessResolver(target: targetEquation)
-        let result = try resolver.resolve(guessEquation)
+        let result = resolver.resolve(guessEquation)
         let description = self.description(for: result)
         XCTAssertEqual(description, expected, file: file, line: line)
     }

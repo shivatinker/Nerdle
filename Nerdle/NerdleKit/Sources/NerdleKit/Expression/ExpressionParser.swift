@@ -13,6 +13,10 @@ struct ExpressionParser {
     
     struct Expression: Equatable {
         let terms: BinopList<Term>
+        
+        var containsSingleNumber: Bool {
+            self.terms.containsSingleValue && self.terms.head.factors.containsSingleValue
+        }
     }
     
     struct Term: Equatable {
@@ -27,6 +31,10 @@ struct ExpressionParser {
             self.head = head
             self.tail = tail
         }
+        
+        var containsSingleValue: Bool {
+            self.tail.isEmpty
+        }
     }
     
     struct BinopPart<T: Equatable>: Equatable {
@@ -38,6 +46,7 @@ struct ExpressionParser {
         case expectedToken
         case expectedEquals
         case expectedNumber
+        case expectedBinop
         case expectedEOF
     }
     
@@ -62,6 +71,10 @@ struct ExpressionParser {
         
         guard self.currentToken == .equals else {
             throw Error.expectedEquals
+        }
+        
+        if lhs.containsSingleNumber {
+            throw Error.expectedBinop
         }
         
         self.next() // Eat "="

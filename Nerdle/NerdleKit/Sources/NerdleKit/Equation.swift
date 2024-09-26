@@ -5,7 +5,7 @@
 //  Created by Andrii Zinoviev on 26.09.2024.
 //
 
-struct Equation {
+struct Equation: CustomStringConvertible {
     let characters: [ExpressionCharacter]
     
     init(characters: [ExpressionCharacter]) throws {
@@ -22,5 +22,9 @@ struct Equation {
         var result: [ExpressionCharacter: Int] = [:]
         self.characters.forEach { result[$0, default: 0] += 1 }
         return result
+    }
+    
+    var description: String {
+        self.characters.map(\.description).joined()
     }
 }

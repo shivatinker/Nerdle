@@ -87,6 +87,7 @@ final class ExpressionParserTests: XCTestCase {
         self.checkError("1234")
         self.checkError("12=34=32")
         self.checkError("12=33+41")
+        self.checkError("111=111")
     }
     
     private func check(

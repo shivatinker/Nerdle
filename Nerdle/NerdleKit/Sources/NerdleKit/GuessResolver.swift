@@ -14,10 +14,8 @@ enum CharacterState {
 struct GuessResolver {
     let target: Equation
     
-    func resolve(_ guess: Equation) throws -> [CharacterState] {
-        guard guess.characters.count == self.target.characters.count else {
-            throw AssertionError("Guess count must match target count")
-        }
+    func resolve(_ guess: Equation) -> [CharacterState] {
+        precondition(guess.characters.count == self.target.characters.count)
         
         var characters = self.target.countCharacters()
         
