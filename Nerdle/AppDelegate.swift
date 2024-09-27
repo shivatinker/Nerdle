@@ -14,8 +14,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let viewController = ViewController()
         let window = NSWindow(contentViewController: viewController)
         
+        window.titleVisibility = .hidden
+        window.styleMask = [
+            .closable,
+            .fullSizeContentView,
+            .titled,
+        ]
+        window.titlebarAppearsTransparent = true
         window.makeKeyAndOrderFront(nil)
-        window.center()
+        
+        window.setFrameAutosaveName("Main Window")
+        window.setFrameUsingName("Main Window")
+        
+        window.isMovableByWindowBackground = true
         
         self.mainWindow = window
     }

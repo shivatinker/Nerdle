@@ -20,13 +20,13 @@ struct GameView: View {
     var body: some View {
         VStack(spacing: 16) {
             Grid(model: self.model)
-            
+                
             InputPanel(
                 states: self.model.gameState.characterGameStates(),
                 action: self.model.handleInputPanelAction
             )
         }
-        .padding(16)
+        .padding([.leading, .trailing, .bottom], 16)
     }
 }
 
@@ -44,6 +44,12 @@ struct Grid: View {
                 }
                 else if index == self.model.gameState.guesses.count, self.model.isInputEnabled {
                     self.rowView(self.makeInputViewCharacters())
+                        .overlay {
+                            if self.model.inputState.error != nil {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.red, lineWidth: 2)
+                            }
+                        }
                 }
                 else {
                     self.rowView(Array(repeating: .empty, count: size))

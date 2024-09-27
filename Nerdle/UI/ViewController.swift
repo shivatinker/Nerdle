@@ -19,6 +19,76 @@ class ViewController: NSViewController {
     }
     
     override func loadView() {
-        self.view = NSHostingView(rootView: GameView())
+        let container = NSView()
+        let view = NSHostingView(rootView: GameView())
+        
+        view.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(view)
+        
+        let titleBar = NSHostingView(rootView: TitleBar())
+        titleBar.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(titleBar)
+        
+        NSLayoutConstraint.activate([
+            titleBar.topAnchor.constraint(equalTo: container.topAnchor),
+            titleBar.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            titleBar.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            titleBar.heightAnchor.constraint(equalToConstant: 48),
+            
+            view.topAnchor.constraint(equalTo: titleBar.bottomAnchor),
+            view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+        ])
+        
+        self.view = container
+    }
+}
+
+struct TitleBar: View {
+    var body: some View {
+        ZStack {
+            Text("Nerdle")
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.blue, .cyan],
+                        startPoint: UnitPoint(x: 0, y: 1),
+                        endPoint: UnitPoint(x: 1, y: 1)
+                    )
+                )
+                .font(.system(size: 24, weight: .semibold))
+            
+            HStack {
+                Spacer()
+                
+                ToolbarButton(imageName: "arrow.trianglehead.2.clockwise.rotate.90") {}
+            }
+            .padding(.trailing, 16)
+        }
+        .frame(height: 48)
+        .frame(maxWidth: .infinity)
+        .ignoresSafeArea()
+    }
+}
+
+private struct ToolbarButton: View {
+    @State var isHovered = false
+    
+    let imageName: String
+    let action: () -> Void
+    
+    var body: some View {
+        Image(systemName: self.imageName)
+            .font(.system(size: 16))
+            .foregroundStyle(.secondary)
+            .padding(6)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(self.isHovered ? Color.white.opacity(0.05) : .clear)
+            )
+            .onHover {
+                self.isHovered = $0
+            }
+            .onTapGesture(perform: self.action)
     }
 }
