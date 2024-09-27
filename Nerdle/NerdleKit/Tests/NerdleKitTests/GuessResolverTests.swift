@@ -39,6 +39,12 @@ final class GuessResolverTests: XCTestCase {
             "2+1=3",
             "WCWCC"
         )
+        
+        try self.check(
+            "735-14=721",
+            "235-14=221",
+            "XCCCCCCXCC"
+        )
     }
     
     private func check(

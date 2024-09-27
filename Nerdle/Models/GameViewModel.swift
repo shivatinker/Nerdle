@@ -49,6 +49,16 @@ final class GameViewModel: ObservableObject {
             
         case .moveRight: self.inputState.moveCursorForward()
             
+        case .takeLastAnswer:
+            guard let lastGuess = self.gameState.guesses.last else {
+                return false
+            }
+            
+            self.inputState.setCharacters(lastGuess.equation.characters)
+            
+        case .clear:
+            self.inputState.clear()
+            
         case .space: self.inputState.inputSpace()
             
         case .delete: self.inputState.eraseBackwards()
@@ -64,11 +74,15 @@ final class GameViewModel: ObservableObject {
         return true
     }
     
-    private func resetInputState() {
-        self.inputState = GuessInputState(size: self.gameState.configuration.size)
+    func inputCharacter(_ character: ExpressionCharacter) {
+        guard self.isInputEnabled else {
+            return
+        }
+        
+        self.inputState.input(character)
     }
     
-    private func inputCharacter(_ character: ExpressionCharacter) {
-        self.inputState.input(character)
+    private func resetInputState() {
+        self.inputState = GuessInputState(size: self.gameState.configuration.size)
     }
 }

@@ -47,25 +47,7 @@ public struct GuessInputState: CustomStringConvertible {
     
     public mutating func input(_ character: ExpressionCharacter) {
         self.characters[self.cursorPosition] = character
-        
-        // TODO: check only empty spaces ahead
-        if self.unwrappedCharacters() == nil {
-            // Move cursor to next empty cell
-            while self.cursorPosition < self.size - 1 {
-                if self.characters[self.cursorPosition] != nil {
-                    self.cursorPosition += 1
-                }
-                else {
-                    break
-                }
-            }
-        }
-        else {
-            // Move cursor to next cell
-            if self.cursorPosition < self.size - 1 {
-                self.cursorPosition += 1
-            }
-        }
+        self.moveCursorForward()
     }
     
     @discardableResult
@@ -87,10 +69,7 @@ public struct GuessInputState: CustomStringConvertible {
     
     public mutating func inputSpace() {
         self.characters[self.cursorPosition] = nil
-        
-        if self.cursorPosition < self.size - 1 {
-            self.cursorPosition += 1
-        }
+        self.moveCursorForward()
     }
     
     public mutating func submit() {
@@ -134,17 +113,13 @@ public struct GuessInputState: CustomStringConvertible {
             self.cursorPosition -= 1
         }
     }
+
+    public mutating func setCharacters(_ characters: [ExpressionCharacter]) {
+        self.characters = characters
+    }
     
-    public mutating func acceptCompletion() {
-        guard let completion else {
-            return
-        }
-        
-        for index in 0..<completion.count {
-            self.characters[index + self.size - completion.count] = completion[index]
-        }
-        
-        self.cursorPosition = self.size - 1
+    public mutating func clear() {
+        self.characters = Array(repeating: nil, count: self.size)
     }
     
     private func unwrappedCharacters() -> [ExpressionCharacter]? {
@@ -158,6 +133,18 @@ public struct GuessInputState: CustomStringConvertible {
     }
     
     // MARK: Completion
+    
+    public mutating func acceptCompletion() {
+        guard let completion else {
+            return
+        }
+        
+        for index in 0..<completion.count {
+            self.characters[index + self.size - completion.count] = completion[index]
+        }
+        
+        self.cursorPosition = self.size - 1
+    }
     
     private mutating func suggestCompletionIfNeeded() {
         self.completion = self.completionString()

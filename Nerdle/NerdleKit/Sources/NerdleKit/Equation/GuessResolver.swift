@@ -96,8 +96,15 @@ public struct GuessResolver {
                 result[index] = .correct
                 characters[character, default: 1] -= 1
             }
-            else if let remainingCount = characters[character],
-                    remainingCount > 0
+        }
+        
+        for (index, character) in guess.characters.enumerated() {
+            if result[index] == .correct {
+                continue
+            }
+            
+            if let remainingCount = characters[character],
+               remainingCount > 0
             {
                 characters[character, default: 1] -= 1
                 result[index] = .wrongPosition

@@ -13,6 +13,8 @@ enum KeyActionResolver {
         case `return`
         case moveLeft
         case moveRight
+        case takeLastAnswer
+        case clear
         case space
         case delete
         case character(Character)
@@ -36,6 +38,14 @@ enum KeyActionResolver {
         
         if event.keyCode == kVK_RightArrow {
             return .moveRight
+        }
+        
+        if event.keyCode == kVK_UpArrow {
+            return .takeLastAnswer
+        }
+        
+        if event.keyCode == kVK_DownArrow {
+            return .clear
         }
         
         if event.keyCode == kVK_Space {

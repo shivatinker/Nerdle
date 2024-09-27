@@ -86,7 +86,7 @@ final class GuessInputStateTests: XCTestCase {
         self.checkState(state, "1+3_4", 1)
         
         state.input(.binop(.divide))
-        self.checkState(state, "1/3_4", 3)
+        self.checkState(state, "1/3_4", 2)
     }
     
     func testSpace() throws {
