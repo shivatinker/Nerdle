@@ -19,6 +19,13 @@ enum KeyActionResolver {
     }
     
     static func resolveAction(event: NSEvent) -> Action? {
+        if event.modifierFlags.contains(.command) ||
+            event.modifierFlags.contains(.option) ||
+            event.modifierFlags.contains(.control)
+        {
+            return nil
+        }
+        
         if event.keyCode == kVK_Return {
             return .return
         }
