@@ -114,6 +114,18 @@ public struct GuessInputState: CustomStringConvertible {
         self.cursorPosition = position
     }
     
+    public mutating func moveCursorForward() {
+        if self.cursorPosition < self.size - 1 {
+            self.cursorPosition += 1
+        }
+    }
+    
+    public mutating func moveCursorBackward() {
+        if self.cursorPosition > 0 {
+            self.cursorPosition -= 1
+        }
+    }
+    
     private func unwrappedCharacters() -> [ExpressionCharacter]? {
         let characters = self.characters.compactMap(\.self)
         

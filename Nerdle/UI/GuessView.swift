@@ -18,37 +18,54 @@ struct Grid: View {
     )
     
     var body: some View {
+        let size = self.model.gameState.configuration.size
+        
         VStack(spacing: 4) {
             ForEach(0..<self.model.gameState.configuration.maxGuesses, id: \.self) { index in
                 if let guess = self.model.gameState.guesses[safe: index] {
-                    GuessView(characters: guess.characters.map(CharacterModel.init))
+                    self.rowView(guess.characters.map(CharacterModel.init))
+                        .disabled(true)
                 }
-                else if index == self.model.gameState.guesses.count {
-                    GuessView(
-                        characters: self.model.inputState.characters.map {
+                else if index == self.model.gameState.guesses.count, self.model.isInputEnabled {
+                    self.rowView(
+                        self.model.inputState.characters.enumerated().map { index, character in
                             CharacterModel(
-                                character: $0,
-                                state: .none
+                                character: character,
+                                state: .none,
+                                isSelected: index == self.model.inputState.cursorPosition
                             )
-                        })
+                        }
+                    )
                 }
                 else {
-                    GuessView(characters: Array(repeating: .empty, count: self.model.gameState.configuration.size))
+                    self.rowView(Array(repeating: .empty, count: size))
+                        .disabled(true)
                 }
             }
         }
         .handleKeys(action: self.model.handleKey)
         .padding(16)
     }
+    
+    private func rowView(_ characters: [CharacterModel]) -> some View {
+        GuessView(
+            characters: characters,
+            action: self.model.inputCellAction(index:)
+        )
+    }
 }
 
 private struct GuessView: View {
     let characters: [CharacterModel]
+    let action: (Int) -> Void
     
     var body: some View {
         HStack(spacing: 4) {
             ForEach(0..<self.characters.count, id: \.self) { index in
-                CharacterView(model: self.characters[index])
+                CharacterView(
+                    model: self.characters[index],
+                    action: { self.action(index) }
+                )
             }
         }
     }
@@ -57,22 +74,29 @@ private struct GuessView: View {
 private struct CharacterModel {
     let character: ExpressionCharacter?
     let state: CharacterState?
+    let isSelected: Bool
     
     init(_ character: GuessCharacter) {
         self.character = character.character
         self.state = character.state
+        self.isSelected = false
     }
     
-    init(character: ExpressionCharacter?, state: CharacterState?) {
+    init(character: ExpressionCharacter?, state: CharacterState?, isSelected: Bool) {
         self.character = character
         self.state = state
+        self.isSelected = isSelected
     }
     
-    static let empty = CharacterModel(character: nil, state: nil)
+    static let empty = CharacterModel(character: nil, state: nil, isSelected: false)
 }
 
 private struct CharacterView: View {
+    @Environment(\.isEnabled) var isEnabled: Bool
+    @State var isHovered: Bool = false
+    
     let model: CharacterModel
+    let action: () -> Void
     
     var body: some View {
         Text(self.text)
@@ -84,6 +108,16 @@ private struct CharacterView: View {
                 RoundedRectangle(cornerRadius: 5)
                     .foregroundStyle(self.backgroundColor)
             )
+            .overlay {
+                if self.model.isSelected {
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(.white, lineWidth: 1)
+                }
+            }
+            .onHover {
+                self.isHovered = $0
+            }
+            .onTapGesture(perform: self.action)
     }
     
     private var text: String {
@@ -96,44 +130,22 @@ private struct CharacterView: View {
     
     private var backgroundColor: Color {
         switch self.model.state {
-        case .correct: return .green
-        case .wrongPosition: return .orange
-        case .incorrect: return .gray
-        case nil: return Color(hex: "3b3b3b")
+        case .correct: .green
+        case .wrongPosition: .orange
+        case .incorrect: .gray
+        case nil: (self.isHovered && self.isEnabled) ? Color(white: 0.33) : Color(white: 0.24)
         }
     }
 }
 
-extension Color {
-    /// Initializes a Color using a hex string (e.g., "#FFFFFF" or "FFFFFF").
-    /// - Parameter hex: The hex string representing the color.
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        
-        let r, g, b, a: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (r, g, b, a) = ((int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17, 255)
-        case 6: // RGB (24-bit)
-            (r, g, b, a) = (int >> 16, int >> 8 & 0xFF, int & 0xFF, 255)
-        case 8: // ARGB (32-bit)
-            (r, g, b, a) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (r, g, b, a) = (1, 1, 1, 0)
-        }
-        
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
+#Preview {
+    CharacterView(
+        model: CharacterModel(
+            character: .digit(7),
+            state: .none,
+            isSelected: true
+        ),
+        action: { print("action") }
+    )
+    .padding(8)
 }
-
-// #Preview {
-//    Grid(size: 8, guesses: 8)
-// }

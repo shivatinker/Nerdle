@@ -9,7 +9,7 @@ import AppKit
 import SwiftUI
 
 extension View {
-    func handleKeys(action: @escaping (NSEvent) -> Void) -> some View {
+    func handleKeys(action: @escaping (NSEvent) -> Bool) -> some View {
         self.background(
             KeyInterceptor(action: action)
         )
@@ -17,7 +17,7 @@ extension View {
 }
 
 private struct KeyInterceptor: NSViewRepresentable {
-    let action: (NSEvent) -> Void
+    let action: (NSEvent) -> Bool
     
     func makeNSView(context: Context) -> KeyInterceptorView {
         KeyInterceptorView(action: self.action)
@@ -27,9 +27,9 @@ private struct KeyInterceptor: NSViewRepresentable {
 }
 
 private final class KeyInterceptorView: NSView {
-    let action: (NSEvent) -> Void
+    let action: (NSEvent) -> Bool
     
-    init(action: @escaping (NSEvent) -> Void) {
+    init(action: @escaping (NSEvent) -> Bool) {
         self.action = action
         
         super.init(frame: .zero)
@@ -45,7 +45,11 @@ private final class KeyInterceptorView: NSView {
     }
     
     override func keyDown(with event: NSEvent) {
-        self.action(event)
+        let didHandle = self.action(event)
+        
+        if false == didHandle {
+            super.keyDown(with: event)
+        }
     }
     
     override func viewDidMoveToWindow() {
