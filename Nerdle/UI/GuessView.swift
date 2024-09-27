@@ -21,7 +21,10 @@ struct GameView: View {
         VStack(spacing: 16) {
             Grid(model: self.model)
             
-            InputPanel(action: self.model.handleInputPanelAction)
+            InputPanel(
+                states: self.model.gameState.characterGameStates(),
+                action: self.model.handleInputPanelAction
+            )
         }
         .padding(16)
     }

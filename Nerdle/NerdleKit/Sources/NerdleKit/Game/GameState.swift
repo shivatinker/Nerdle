@@ -55,4 +55,32 @@ public struct GameState: Codable, Equatable {
         
         self.guesses.append(guess)
     }
+    
+    public func characterGameStates() -> [ExpressionCharacter: CharacterGameState] {
+        var result: [ExpressionCharacter: CharacterGameState] = [:]
+        
+        for guess in self.guesses {
+            for character in guess.characters {
+                let oldValue = result[character.character, default: .incorrect]
+                let newValue = self.gameState(character.state)
+                result[character.character] = max(oldValue, newValue)
+            }
+        }
+        
+        return result
+    }
+    
+    private func gameState(_ state: CharacterState) -> CharacterGameState {
+        switch state {
+        case .correct: .correct
+        case .wrongPosition: .wrongPosition
+        case .incorrect: .incorrect
+        }
+    }
+}
+
+public enum CharacterGameState: Comparable {
+    case incorrect
+    case wrongPosition
+    case correct
 }
