@@ -5,12 +5,12 @@
 //  Created by Andrii Zinoviev on 26.09.2024.
 //
 
-enum ExpressionCharacter: Hashable, CustomStringConvertible {
+public enum ExpressionCharacter: Hashable, CustomStringConvertible {
     case digit(Int)
     case binop(ExpressionBinop)
     case equals
     
-    var description: String {
+    public var description: String {
         switch self {
         case let .digit(digit):
             return String(digit)
@@ -32,33 +32,39 @@ enum ExpressionToken: Equatable {
 }
 
 // TODO: Hard Mode
-enum ExpressionBinop: String, Equatable, CaseIterable {
+public enum ExpressionBinop: String, Equatable, CaseIterable {
     case plus = "+"
     case minus = "-"
     case multiply = "*"
     case divide = "/"
 }
 
-struct ExpressionLexer {
+public struct ExpressionLexer {
     enum Error: Swift.Error {
         case invalidCharacter(Character)
     }
     
+    public init() {}
+    
+    public func character(for character: Character) throws -> ExpressionCharacter {
+        if "0"..."9" ~= character {
+            return .digit(try self.digit(character: character))
+        }
+        
+        if let binop = ExpressionBinop(rawValue: String(character)) {
+            return .binop(binop)
+        }
+        
+        if character == "=" {
+            return .equals
+        }
+        
+        throw Error.invalidCharacter(character)
+    }
+    
     func characters(string: String) throws -> [ExpressionCharacter] {
         try string.map {
-            if "0"..."9" ~= $0 {
-                return .digit(try self.digit(character: $0))
-            }
-            
-            if let binop = ExpressionBinop(rawValue: String($0)) {
-                return .binop(binop)
-            }
-            
-            if $0 == "=" {
-                return .equals
-            }
-            
-            throw Error.invalidCharacter($0)
+            try self.character(for: $0)
         }
     }
     

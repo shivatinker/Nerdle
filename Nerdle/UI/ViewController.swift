@@ -6,12 +6,11 @@
 //
 
 import AppKit
+import SwiftUI
 
 class ViewController: NSViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
-        
-        self.preferredContentSize = .init(width: 480, height: 350)
     }
     
     @available(*, unavailable)
@@ -20,6 +19,6 @@ class ViewController: NSViewController {
     }
     
     override func loadView() {
-        self.view = NSView()
+        self.view = NSHostingView(rootView: Grid())
     }
 }

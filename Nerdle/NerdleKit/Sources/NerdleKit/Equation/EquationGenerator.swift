@@ -5,15 +5,20 @@
 //  Created by Andrii Zinoviev on 26.09.2024.
 //
 
-struct EquationGenerator {
+public struct EquationGenerator {
     private static let maxAttempts: Int = 1000
     private var rng: RandomNumberGenerator
     
-    init(seed: UInt64) {
+    public init(seed: UInt64) {
         self.rng = SplitMix64(seed: seed)
     }
     
-    mutating func generateEquations(size: Int, count: Int) -> [Equation] {
+    public static func generateRandomEquation(size: Int) -> Equation {
+        var generator = EquationGenerator(seed: UInt64.random(in: 0..<UInt64.max))
+        return generator.generateEquation(size: 8, maxAttempts: Self.maxAttempts)
+    }
+    
+    public mutating func generateEquations(size: Int, count: Int) -> [Equation] {
         var result: [Equation] = []
         
         for _ in 0..<count {
@@ -84,7 +89,12 @@ struct EquationGenerator {
         }
         
         result += completion
-        return try? Equation(string: result)
+        
+        guard let equation = try? Equation(string: result) else {
+            preconditionFailure("Expected equation to be valid at this point.")
+        }
+        
+        return equation
     }
     
     private mutating func generateRandomBinop() -> ExpressionBinop {

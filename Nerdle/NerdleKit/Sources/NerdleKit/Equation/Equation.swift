@@ -5,15 +5,15 @@
 //  Created by Andrii Zinoviev on 26.09.2024.
 //
 
-struct Equation: CustomStringConvertible {
-    let characters: [ExpressionCharacter]
+public struct Equation: Codable, CustomStringConvertible, Equatable {
+    public let characters: [ExpressionCharacter]
     
     init(characters: [ExpressionCharacter]) throws {
         try ExpressionValidator.validate(characters)
         self.characters = characters
     }
     
-    init(string: String) throws {
+    public init(string: String) throws {
         let characters = try ExpressionLexer().characters(string: string)
         try self.init(characters: characters)
     }
@@ -24,7 +24,21 @@ struct Equation: CustomStringConvertible {
         return result
     }
     
-    var description: String {
+    public var description: String {
         self.characters.map(\.description).joined()
+    }
+    
+    // MARK: Codable
+    
+    public func encode(to encoder: any Encoder) throws {
+        let string = self.description
+        var container = encoder.singleValueContainer()
+        try container.encode(string)
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let string = try container.decode(String.self)
+        try self.init(string: string)
     }
 }

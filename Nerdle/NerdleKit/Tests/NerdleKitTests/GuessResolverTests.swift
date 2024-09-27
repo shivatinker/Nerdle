@@ -52,19 +52,6 @@ final class GuessResolverTests: XCTestCase {
         let guessEquation = try Equation(string: guess)
         let resolver = GuessResolver(target: targetEquation)
         let result = resolver.resolve(guessEquation)
-        let description = self.description(for: result)
-        XCTAssertEqual(description, expected, file: file, line: line)
-    }
-    
-    private func description(for result: [CharacterState]) -> String {
-        result
-            .map {
-                switch $0 {
-                case .correct: "C"
-                case .wrongPosition: "W"
-                case .incorrect: "X"
-                }
-            }
-            .joined()
+        XCTAssertEqual(result.states.description, expected, file: file, line: line)
     }
 }
