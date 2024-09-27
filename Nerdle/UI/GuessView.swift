@@ -8,7 +8,7 @@
 import NerdleKit
 import SwiftUI
 
-struct Grid: View {
+struct GameView: View {
     @StateObject var model = GameViewModel(
         target: EquationGenerator.generateRandomEquation(size: 10),
         configuration: GameConfiguration(
@@ -16,6 +16,19 @@ struct Grid: View {
             maxGuesses: 8
         )
     )
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            Grid(model: self.model)
+            
+            InputPanel(action: self.model.handleInputPanelAction)
+        }
+        .padding(16)
+    }
+}
+
+struct Grid: View {
+    @ObservedObject var model: GameViewModel
     
     var body: some View {
         let size = self.model.gameState.configuration.size
@@ -36,7 +49,6 @@ struct Grid: View {
             }
         }
         .handleKeys(action: self.model.handleKey)
-        .padding(16)
     }
     
     private func makeInputViewCharacters() -> [CharacterModel] {

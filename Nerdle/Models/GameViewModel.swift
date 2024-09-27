@@ -31,6 +31,32 @@ final class GameViewModel: ObservableObject {
         self.inputState.setCursorPosition(to: index)
     }
     
+    func handleInputPanelAction(_ action: InputPanelAction) {
+        guard self.isInputEnabled else {
+            return
+        }
+        
+        switch action {
+        case let .character(character):
+            self.inputCharacter(character)
+            
+        case .enter:
+            self.submit()
+            
+        case .delete:
+            self.inputState.eraseBackwards()
+        }
+    }
+    
+    private func submit() {
+        self.inputState.submit()
+        
+        if let equation = self.inputState.submittedEquation {
+            self.gameState.addGuess(equation: equation)
+            self.resetInputState()
+        }
+    }
+    
     func handleKey(_ event: NSEvent) -> Bool {
         guard self.isInputEnabled else {
             return false
@@ -38,12 +64,7 @@ final class GameViewModel: ObservableObject {
         
         switch KeyActionResolver.resolveAction(event: event) {
         case .return:
-            self.inputState.submit()
-            
-            if let equation = self.inputState.submittedEquation {
-                self.gameState.addGuess(equation: equation)
-                self.resetInputState()
-            }
+            self.submit()
             
         case .moveLeft: self.inputState.moveCursorBackward()
             

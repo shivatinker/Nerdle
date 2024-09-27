@@ -19,6 +19,6 @@ class ViewController: NSViewController {
     }
     
     override func loadView() {
-        self.view = NSHostingView(rootView: Grid())
+        self.view = NSHostingView(rootView: GameView())
     }
 }
