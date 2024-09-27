@@ -20,10 +20,10 @@ final class GuessInputStateTests: XCTestCase {
         self.checkState(state, "1+___", 2)
         
         state.input(.digit(2))
-        self.checkState(state, "1+2__", 3)
+        self.checkState(state, "1+2__", 3, completion: "=3")
         
         state.input(.equals)
-        self.checkState(state, "1+2=_", 4)
+        self.checkState(state, "1+2=_", 4, completion: "3")
         
         state.input(.digit(3))
         self.checkState(state, "1+2=3", 4)
@@ -49,10 +49,10 @@ final class GuessInputStateTests: XCTestCase {
         self.checkState(state, "1+2=4", 4, hasError: true)
         
         state.eraseBackwards()
-        self.checkState(state, "1+2=_", 4)
+        self.checkState(state, "1+2=_", 4, completion: "3")
         
         state.eraseBackwards()
-        self.checkState(state, "1+2__", 3)
+        self.checkState(state, "1+2__", 3, completion: "=3")
         
         state.eraseBackwards()
         self.checkState(state, "1+___", 2)
@@ -109,10 +109,24 @@ final class GuessInputStateTests: XCTestCase {
         self.checkState(state, "1_34_", 4)
     }
     
+    func testCompletion() throws {
+        var state = GuessInputState(size: 8)
+        
+        state.input(string: "14+52")
+        self.checkState(state, "14+52___", 5, completion: "=66")
+        
+        state.input(.equals)
+        self.checkState(state, "14+52=__", 6, completion: "66")
+        
+        state.acceptCompletion()
+        self.checkState(state, "14+52=66", 7)
+    }
+    
     private func checkState(
         _ state: GuessInputState,
         _ expected: String,
         _ cursorPosition: Int,
+        completion: String? = nil,
         submittedEquation: Equation? = nil,
         hasError: Bool = false,
         file: StaticString = #filePath,
@@ -122,5 +136,6 @@ final class GuessInputStateTests: XCTestCase {
         XCTAssertEqual(state.cursorPosition, cursorPosition, file: file, line: line)
         XCTAssertEqual(state.submittedEquation, submittedEquation, file: file, line: line)
         XCTAssertEqual(state.error != nil, hasError, file: file, line: line)
+        XCTAssertEqual(state.completion?.map(\.description).joined(), completion, file: file, line: line)
     }
 }

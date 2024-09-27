@@ -10,10 +10,10 @@ import SwiftUI
 
 struct Grid: View {
     @StateObject var model = GameViewModel(
-        target: EquationGenerator.generateRandomEquation(size: 8),
+        target: EquationGenerator.generateRandomEquation(size: 10),
         configuration: GameConfiguration(
-            size: 8,
-            maxGuesses: 6
+            size: 10,
+            maxGuesses: 8
         )
     )
     
@@ -27,15 +27,7 @@ struct Grid: View {
                         .disabled(true)
                 }
                 else if index == self.model.gameState.guesses.count, self.model.isInputEnabled {
-                    self.rowView(
-                        self.model.inputState.characters.enumerated().map { index, character in
-                            CharacterModel(
-                                character: character,
-                                state: .none,
-                                isSelected: index == self.model.inputState.cursorPosition
-                            )
-                        }
-                    )
+                    self.rowView(self.makeInputViewCharacters())
                 }
                 else {
                     self.rowView(Array(repeating: .empty, count: size))
@@ -45,6 +37,32 @@ struct Grid: View {
         }
         .handleKeys(action: self.model.handleKey)
         .padding(16)
+    }
+    
+    private func makeInputViewCharacters() -> [CharacterModel] {
+        var characters = self.model.inputState.characters.enumerated().map { index, character in
+            CharacterModel(
+                character: character,
+                state: .none,
+                isSelected: index == self.model.inputState.cursorPosition,
+                isCompletion: false
+            )
+        }
+        
+        guard let completion = self.model.inputState.completion else {
+            return characters
+        }
+        
+        for index in 0..<completion.count {
+            characters[index + characters.count - completion.count] = CharacterModel(
+                character: completion[index],
+                state: .none,
+                isSelected: index + characters.count - completion.count == self.model.inputState.cursorPosition,
+                isCompletion: true
+            )
+        }
+        
+        return characters
     }
     
     private func rowView(_ characters: [CharacterModel]) -> some View {
@@ -75,20 +93,28 @@ private struct CharacterModel {
     let character: ExpressionCharacter?
     let state: CharacterState?
     let isSelected: Bool
+    let isCompletion: Bool
     
     init(_ character: GuessCharacter) {
         self.character = character.character
         self.state = character.state
         self.isSelected = false
+        self.isCompletion = false
     }
     
-    init(character: ExpressionCharacter?, state: CharacterState?, isSelected: Bool) {
+    init(
+        character: ExpressionCharacter?,
+        state: CharacterState?,
+        isSelected: Bool,
+        isCompletion: Bool
+    ) {
         self.character = character
         self.state = state
         self.isSelected = isSelected
+        self.isCompletion = isCompletion
     }
     
-    static let empty = CharacterModel(character: nil, state: nil, isSelected: false)
+    static let empty = CharacterModel(character: nil, state: nil, isSelected: false, isCompletion: false)
 }
 
 private struct CharacterView: View {
@@ -102,7 +128,7 @@ private struct CharacterView: View {
         Text(self.text)
             .fontWeight(.semibold)
             .font(.system(size: 16))
-            .foregroundStyle(.white)
+            .foregroundStyle(self.model.isCompletion ? .cyan : .white)
             .frame(width: 40, height: 40)
             .background(
                 RoundedRectangle(cornerRadius: 5)
@@ -143,7 +169,8 @@ private struct CharacterView: View {
         model: CharacterModel(
             character: .digit(7),
             state: .none,
-            isSelected: true
+            isSelected: true,
+            isCompletion: true
         ),
         action: { print("action") }
     )

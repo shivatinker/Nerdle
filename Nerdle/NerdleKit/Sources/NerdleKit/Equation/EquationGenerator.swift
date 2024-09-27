@@ -15,7 +15,7 @@ public struct EquationGenerator {
     
     public static func generateRandomEquation(size: Int) -> Equation {
         var generator = EquationGenerator(seed: UInt64.random(in: 0..<UInt64.max))
-        return generator.generateEquation(size: 8, maxAttempts: Self.maxAttempts)
+        return generator.generateEquation(size: size, maxAttempts: Self.maxAttempts)
     }
     
     public mutating func generateEquations(size: Int, count: Int) -> [Equation] {

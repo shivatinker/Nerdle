@@ -11,6 +11,7 @@ public struct GuessInputState: CustomStringConvertible {
     public private(set) var characters: [ExpressionCharacter?] {
         didSet {
             self.validateInputIfNeeded()
+            self.suggestCompletionIfNeeded()
         }
     }
 
@@ -18,6 +19,8 @@ public struct GuessInputState: CustomStringConvertible {
     
     public private(set) var submittedEquation: Equation?
     public private(set) var error: Error?
+    
+    public private(set) var completion: [ExpressionCharacter]?
     
     public init(size: Int) {
         precondition(size > 0)
@@ -92,7 +95,13 @@ public struct GuessInputState: CustomStringConvertible {
     
     public mutating func submit() {
         precondition(self.submittedEquation == nil)
-        self.submittedEquation = self.validateInputIfNeeded()
+        
+        if self.completion != nil {
+            self.acceptCompletion()
+        }
+        else {
+            self.submittedEquation = self.validateInputIfNeeded()
+        }
     }
     
     public mutating func eraseBackwards() {
@@ -126,6 +135,18 @@ public struct GuessInputState: CustomStringConvertible {
         }
     }
     
+    public mutating func acceptCompletion() {
+        guard let completion else {
+            return
+        }
+        
+        for index in 0..<completion.count {
+            self.characters[index + self.size - completion.count] = completion[index]
+        }
+        
+        self.cursorPosition = self.size - 1
+    }
+    
     private func unwrappedCharacters() -> [ExpressionCharacter]? {
         let characters = self.characters.compactMap(\.self)
         
@@ -135,6 +156,54 @@ public struct GuessInputState: CustomStringConvertible {
         
         return characters
     }
+    
+    // MARK: Completion
+    
+    private mutating func suggestCompletionIfNeeded() {
+        self.completion = self.completionString()
+    }
+    
+    private func completionString() -> [ExpressionCharacter]? {
+        guard let lastCharacterIndex = self.characters.lastIndex(where: { $0 != nil }) else {
+            return nil
+        }
+        
+        var characters = self.characters[0...lastCharacterIndex]
+        
+        guard characters.allSatisfy({ $0 != nil }) else {
+            return nil
+        }
+        
+        var didAppendEquals = false
+        
+        if characters.last != .equals {
+            characters.append(.equals)
+            didAppendEquals = true
+        }
+        
+        guard let completion = try? ExpressionValidator.complete(Array(characters.compactMap(\.self))) else {
+            return nil
+        }
+        
+        let result = String(completion)
+        
+        guard result.count == self.size - characters.count else {
+            return nil
+        }
+        
+        guard let completion = try? ExpressionLexer().characters(string: result) else {
+            return nil
+        }
+        
+        if didAppendEquals {
+            return [.equals] + completion
+        }
+        else {
+            return completion
+        }
+    }
+    
+    // MARK: Description
     
     public var description: String {
         self.characters
