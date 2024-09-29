@@ -24,6 +24,7 @@ struct GameView: View {
             .padding([.leading, .trailing, .bottom], 16)
             
             if self.model.isHistoryVisible {
+                Divider()
                 HistoryView(model: self.model.makeHistoryViewModel)
             }
         }
@@ -110,7 +111,7 @@ private struct GuessView: View {
     }
 }
 
-private struct CharacterModel {
+private struct CharacterModel: Sendable {
     let character: ExpressionCharacter?
     let state: CharacterState?
     let isSelected: Bool

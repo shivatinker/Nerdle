@@ -5,7 +5,7 @@
 //  Created by Andrii Zinoviev on 26.09.2024.
 //
 
-public enum ExpressionCharacter: Hashable, CustomStringConvertible {
+public enum ExpressionCharacter: Hashable, CustomStringConvertible, Sendable {
     case digit(Int)
     case binop(ExpressionBinop)
     case equals
@@ -32,7 +32,7 @@ enum ExpressionToken: Equatable {
 }
 
 // TODO: Hard Mode
-public enum ExpressionBinop: String, Equatable, CaseIterable {
+public enum ExpressionBinop: String, Equatable, CaseIterable, Sendable {
     case plus = "+"
     case minus = "-"
     case multiply = "*"

@@ -48,13 +48,17 @@ class ViewController: NSViewController {
     }
     
     private func makeViewModel() throws -> GameViewModel {
-        try GameViewModel(
+        let path = self.dbPath
+        
+        print("DB Path: \(path ?? "<nil>")")
+        
+        return try GameViewModel(
             target: EquationGenerator.generateRandomEquation(size: 8),
             configuration: GameConfiguration(
                 size: 8,
                 maxGuesses: 6
             ),
-            databaseController: DatabaseController(path: self.dbPath)
+            databaseController: DatabaseController(path: path)
         )
     }
     

@@ -44,6 +44,16 @@ public struct GameHistoryItem: Identifiable {
     public let termination: GameTermination
 }
 
+public struct HistoryStats {
+    public let gamesPlayed: Int
+    public let gamesWon: Int
+    
+    public init(gamesPlayed: Int, gamesWon: Int) {
+        self.gamesPlayed = gamesPlayed
+        self.gamesWon = gamesWon
+    }
+}
+
 public struct GameDatabase {
     enum Error: Swift.Error {
         case notFinished
@@ -85,5 +95,21 @@ public struct GameDatabase {
                 termination: $0.termination
             )
         }
+    }
+    
+    public func stats() throws -> HistoryStats {
+        let request = SQLRequest<Row>(sql: """
+        SELECT 
+        COUNT(*) AS total,
+        COUNT(CASE WHEN termination = 'won' THEN 1 END) AS won
+        FROM \(GameHistoryItemRow.databaseTableName)
+        """)
+                                      
+        let row = try request.fetchOne(self.db).unwrap()
+        
+        return HistoryStats(
+            gamesPlayed: row["total"],
+            gamesWon: row["won"]
+        )
     }
 }

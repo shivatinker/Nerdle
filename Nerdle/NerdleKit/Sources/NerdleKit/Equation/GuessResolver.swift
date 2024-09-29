@@ -5,7 +5,7 @@
 //  Created by Andrii Zinoviev on 26.09.2024.
 //
 
-public enum CharacterState: String {
+public enum CharacterState: String, Sendable {
     case correct = "C"
     case wrongPosition = "W"
     case incorrect = "X"

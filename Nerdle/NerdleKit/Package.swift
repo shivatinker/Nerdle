@@ -19,7 +19,8 @@ let package = Package(
             name: "NerdleKit",
             dependencies: [
                 .product(name: "GRDB", package: "grdb.swift"),
-            ]
+            ],
+            swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .testTarget(
             name: "NerdleKitTests",

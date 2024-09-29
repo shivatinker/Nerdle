@@ -30,6 +30,23 @@ final class GameDatabaseTests: XCTestCase {
         XCTAssertEqual(games[safe: 1]?.termination, .won)
     }
     
+    func testStats() throws {
+        let controller = try DatabaseController(path: nil)
+        
+        try controller.write { db in
+            try db.logGame(state: self.makeWonGame(), date: Date(timeIntervalSince1970: 1727610396))
+            try db.logGame(state: self.makeWonGame(), date: Date(timeIntervalSince1970: 1727610360))
+            try db.logGame(state: self.makeLostGame(), date: Date(timeIntervalSince1970: 1727610440))
+        }
+        
+        let stats = try controller.read { db in
+            try db.stats()
+        }
+        
+        XCTAssertEqual(stats.gamesPlayed, 3)
+        XCTAssertEqual(stats.gamesWon, 2)
+    }
+    
     // MARK: Utils
     
     private func makeWonGame() throws -> GameState {
