@@ -17,7 +17,6 @@ public struct GuessInputState: CustomStringConvertible {
 
     public private(set) var cursorPosition: Int = 0
     
-    public private(set) var submittedEquation: Equation?
     public private(set) var error: Error?
     
     public private(set) var completion: [ExpressionCharacter]?
@@ -72,14 +71,13 @@ public struct GuessInputState: CustomStringConvertible {
         self.moveCursorForward()
     }
     
-    public mutating func submit() {
-        precondition(self.submittedEquation == nil)
-        
+    public mutating func submit() -> Equation? {
         if self.completion != nil {
             self.acceptCompletion()
+            return nil
         }
         else {
-            self.submittedEquation = self.validateInputIfNeeded()
+            return self.validateInputIfNeeded()
         }
     }
     

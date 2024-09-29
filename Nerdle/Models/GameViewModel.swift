@@ -49,9 +49,7 @@ final class GameViewModel: ObservableObject {
     }
     
     private func submit() {
-        self.inputState.submit()
-        
-        if let equation = self.inputState.submittedEquation {
+        if let equation = self.inputState.submit() {
             self.gameState.addGuess(equation: equation)
             self.resetInputState()
         }

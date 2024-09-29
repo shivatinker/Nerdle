@@ -28,8 +28,8 @@ final class GuessInputStateTests: XCTestCase {
         state.input(.digit(3))
         self.checkState(state, "1+2=3", 4)
         
-        state.submit()
-        self.checkState(state, "1+2=3", 4, submittedEquation: try Equation(string: "1+2=3"))
+        XCTAssertEqual(state.submit(), try Equation(string: "1+2=3"))
+        self.checkState(state, "1+2=3", 4)
     }
     
     func testOverflow() throws {
@@ -127,14 +127,12 @@ final class GuessInputStateTests: XCTestCase {
         _ expected: String,
         _ cursorPosition: Int,
         completion: String? = nil,
-        submittedEquation: Equation? = nil,
         hasError: Bool = false,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
         XCTAssertEqual(state.description, expected, file: file, line: line)
         XCTAssertEqual(state.cursorPosition, cursorPosition, file: file, line: line)
-        XCTAssertEqual(state.submittedEquation, submittedEquation, file: file, line: line)
         XCTAssertEqual(state.error != nil, hasError, file: file, line: line)
         XCTAssertEqual(state.completion?.map(\.description).joined(), completion, file: file, line: line)
     }

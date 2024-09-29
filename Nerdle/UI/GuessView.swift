@@ -10,10 +10,10 @@ import SwiftUI
 
 struct GameView: View {
     @StateObject var model = GameViewModel(
-        target: EquationGenerator.generateRandomEquation(size: 10),
+        target: EquationGenerator.generateRandomEquation(size: 8),
         configuration: GameConfiguration(
-            size: 10,
-            maxGuesses: 8
+            size: 8,
+            maxGuesses: 6
         )
     )
     

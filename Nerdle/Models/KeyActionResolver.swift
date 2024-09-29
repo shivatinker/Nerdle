@@ -28,7 +28,7 @@ enum KeyActionResolver {
             return nil
         }
         
-        if event.keyCode == kVK_Return {
+        if event.keyCode == kVK_Return || event.keyCode == kVK_ANSI_KeypadEnter {
             return .return
         }
         
