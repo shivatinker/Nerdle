@@ -9,24 +9,24 @@ import NerdleKit
 import SwiftUI
 
 struct GameView: View {
-    @StateObject var model = GameViewModel(
-        target: EquationGenerator.generateRandomEquation(size: 8),
-        configuration: GameConfiguration(
-            size: 8,
-            maxGuesses: 6
-        )
-    )
+    @StateObject var model: GameViewModel
     
     var body: some View {
-        VStack(spacing: 16) {
-            Grid(model: self.model)
+        HStack {
+            VStack(spacing: 16) {
+                Grid(model: self.model)
                 
-            InputPanel(
-                states: self.model.gameState.characterGameStates(),
-                action: self.model.handleInputPanelAction
-            )
+                InputPanel(
+                    states: self.model.gameState.characterGameStates(),
+                    action: self.model.handleInputPanelAction
+                )
+            }
+            .padding([.leading, .trailing, .bottom], 16)
+            
+            if self.model.isHistoryVisible {
+                HistoryView(model: self.model.makeHistoryViewModel)
+            }
         }
-        .padding([.leading, .trailing, .bottom], 16)
     }
 }
 

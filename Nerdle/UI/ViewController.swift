@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import NerdleKit
 import SwiftUI
 
 class ViewController: NSViewController {
@@ -19,13 +20,15 @@ class ViewController: NSViewController {
     }
     
     override func loadView() {
+        let model = try! self.makeViewModel()
+        
         let container = NSView()
-        let view = NSHostingView(rootView: GameView())
+        let view = NSHostingView(rootView: GameView(model: model))
         
         view.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(view)
         
-        let titleBar = NSHostingView(rootView: TitleBar())
+        let titleBar = NSHostingView(rootView: TitleBar(model: model))
         titleBar.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(titleBar)
         
@@ -43,9 +46,31 @@ class ViewController: NSViewController {
         
         self.view = container
     }
+    
+    private func makeViewModel() throws -> GameViewModel {
+        try GameViewModel(
+            target: EquationGenerator.generateRandomEquation(size: 8),
+            configuration: GameConfiguration(
+                size: 8,
+                maxGuesses: 6
+            ),
+            databaseController: DatabaseController(path: self.dbPath)
+        )
+    }
+    
+    private var dbPath: String? {
+        guard let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            print("Failed to find application support directory!")
+            return nil
+        }
+        
+        return url.appending(component: "nerdle.db").path(percentEncoded: false)
+    }
 }
 
 struct TitleBar: View {
+    @StateObject var model: GameViewModel
+    
     var body: some View {
         ZStack {
             Text("Nerdle")
@@ -61,7 +86,19 @@ struct TitleBar: View {
             HStack {
                 Spacer()
                 
-                ToolbarButton(imageName: "arrow.trianglehead.2.clockwise.rotate.90") {}
+                ToolbarButton(
+                    imageName: "clock.arrow.trianglehead.counterclockwise.rotate.90",
+                    action: {
+                        self.model.isHistoryVisible.toggle()
+                    }
+                )
+                
+                if self.model.isReloadEnabled {
+                    ToolbarButton(
+                        imageName: "arrow.trianglehead.2.clockwise.rotate.90",
+                        action: self.model.reloadGame
+                    )
+                }
             }
             .padding(.trailing, 16)
         }

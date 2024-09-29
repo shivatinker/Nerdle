@@ -11,16 +11,28 @@ import NerdleKit
 
 @MainActor
 final class GameViewModel: ObservableObject {
+    private let databaseController: DatabaseController
+    
     @Published private(set) var gameState: GameState
     @Published private(set) var inputState: GuessInputState
+    @Published var isHistoryVisible = false
     
     var isInputEnabled: Bool {
         self.gameState.termination == nil
     }
     
-    init(target: Equation, configuration: GameConfiguration) {
+    var isReloadEnabled: Bool {
+        self.gameState.termination != nil
+    }
+    
+    init(
+        target: Equation,
+        configuration: GameConfiguration,
+        databaseController: DatabaseController
+    ) {
         self.gameState = GameState(target: target, configuration: configuration)
         self.inputState = GuessInputState(size: configuration.size)
+        self.databaseController = databaseController
     }
     
     func inputCellAction(index: Int) {
@@ -52,6 +64,18 @@ final class GameViewModel: ObservableObject {
         if let equation = self.inputState.submit() {
             self.gameState.addGuess(equation: equation)
             self.resetInputState()
+            
+            if self.gameState.termination != nil {
+                do {
+                    try self.databaseController.write { db in
+                        let id = try db.logGame(state: self.gameState, date: .now)
+                        print("Saved game with id \(id)")
+                    }
+                }
+                catch {
+                    print("Failed to save game results: \(error).")
+                }
+            }
         }
     }
     
@@ -103,5 +127,22 @@ final class GameViewModel: ObservableObject {
     
     private func resetInputState() {
         self.inputState = GuessInputState(size: self.gameState.configuration.size)
+    }
+    
+    func reloadGame() {
+        precondition(self.isReloadEnabled)
+        
+        self.gameState = GameState(
+            target: EquationGenerator.generateRandomEquation(
+                size: self.gameState.configuration.size
+            ),
+            configuration: self.gameState.configuration
+        )
+        
+        self.resetInputState()
+    }
+    
+    func makeHistoryViewModel() -> HistoryViewModel {
+        HistoryViewModel(databaseController: self.databaseController)
     }
 }

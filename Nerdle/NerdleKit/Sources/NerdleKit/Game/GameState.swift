@@ -15,7 +15,7 @@ public struct GameConfiguration: Codable, Equatable {
     }
 }
 
-public enum GameTermination {
+public enum GameTermination: Codable {
     case won
     case lost
 }

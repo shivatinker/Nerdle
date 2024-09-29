@@ -11,9 +11,15 @@ let package = Package(
             targets: ["NerdleKit"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/groue/GRDB.swift.git", exact: "6.29.3"),
+    ],
     targets: [
         .target(
-            name: "NerdleKit"
+            name: "NerdleKit",
+            dependencies: [
+                .product(name: "GRDB", package: "grdb.swift"),
+            ]
         ),
         .testTarget(
             name: "NerdleKitTests",
