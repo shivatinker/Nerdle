@@ -17,8 +17,11 @@ final class HistoryViewModel: ObservableObject {
     @Published private(set) var items: [GameHistoryItem] = []
     @Published private(set) var stats: HistoryStats?
     
-    init(databaseController: DatabaseController) {
+    private let itemAction: (GameID) -> Void
+    
+    init(databaseController: DatabaseController, itemAction: @escaping (GameID) -> Void) {
         self.databaseController = databaseController
+        self.itemAction = itemAction
         
         self.databaseController
             .observe { db in
@@ -35,5 +38,9 @@ final class HistoryViewModel: ObservableObject {
             .replaceError(with: nil)
             .sink { self.stats = $0 }
             .store(in: &self.subscriptions)
+    }
+    
+    func itemAction(_ gameID: GameID) {
+        self.itemAction(gameID)
     }
 }

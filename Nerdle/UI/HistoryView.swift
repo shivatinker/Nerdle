@@ -27,7 +27,8 @@ struct HistoryView: View {
                     guessCount: item.state.guesses.count
                 )
             },
-            stats: self.model.stats
+            stats: self.model.stats,
+            action: self.model.itemAction
         )
     }
 }
@@ -35,12 +36,17 @@ struct HistoryView: View {
 private struct HistoryViewContent: View {
     let items: [HistoryListItem]
     let stats: HistoryStats?
+    let action: (GameID) -> Void
     
     var body: some View {
         VStack {
             List(self.items) { item in
                 item
                     .listRowBackground(Color.clear)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        self.action(item.id)
+                    }
             }
             .listStyle(.plain)
             .listRowBackground(Color.clear)
@@ -81,6 +87,8 @@ private struct StatsView: View {
 }
 
 private struct HistoryListItem: View, @preconcurrency Identifiable {
+    @State var isHovered = false
+    
     let id: GameID
     let termination: GameTermination
     let date: Date
@@ -104,6 +112,13 @@ private struct HistoryListItem: View, @preconcurrency Identifiable {
             DifficultyIndicator(configuration: self.configuraiton)
         }
         .padding([.leading, .trailing], 4)
+        .background(
+            RoundedRectangle(cornerRadius: 4)
+                .fill(self.isHovered ? Color.white.opacity(0.05) : .clear)
+        )
+        .onHover {
+            self.isHovered = $0
+        }
     }
     
     @ViewBuilder
@@ -175,6 +190,7 @@ private struct DifficultyIndicator: View {
         stats: HistoryStats(
             gamesPlayed: 3,
             gamesWon: 2
-        )
+        ),
+        action: { _ in }
     )
 }

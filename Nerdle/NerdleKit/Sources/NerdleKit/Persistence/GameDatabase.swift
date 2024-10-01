@@ -97,6 +97,10 @@ public struct GameDatabase {
         }
     }
     
+    public func gameState(id: GameID) throws -> GameState {
+        try GameHistoryItemRow.fetchOne(self.db, key: id).unwrap().state
+    }
+    
     public func stats() throws -> HistoryStats {
         let request = SQLRequest<Row>(sql: """
         SELECT 

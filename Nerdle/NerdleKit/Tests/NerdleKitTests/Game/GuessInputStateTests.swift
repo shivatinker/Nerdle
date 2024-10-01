@@ -87,6 +87,9 @@ final class GuessInputStateTests: XCTestCase {
         
         state.input(.binop(.divide))
         self.checkState(state, "1/3_4", 2)
+        
+        state.moveCursorBackward()
+        self.checkState(state, "1/3_4", 1)
     }
     
     func testSpace() throws {
@@ -118,9 +121,38 @@ final class GuessInputStateTests: XCTestCase {
         state.input(.equals)
         self.checkState(state, "14+52=__", 6, completion: "66")
         
-        state.acceptCompletion()
+        XCTAssertEqual(state.submit(), nil)
+        self.checkState(state, "14+52=66", 7)
+        
+        XCTAssertEqual(state.submit(), try Equation(string: "14+52=66"))
         self.checkState(state, "14+52=66", 7)
     }
+    
+    func testSubstituteLastGuess() throws {
+        var state = GuessInputState(size: 8)
+        
+        state.input(string: "14+52")
+        self.checkState(state, "14+52___", 5, completion: "=66")
+        
+        state.substituteLastGuess(try Equation(string: "11+22=33"))
+        self.checkState(state, "11+22___", 5, completion: "=33")
+        
+        state.setCursorPosition(to: 0)
+        state.input(.digit(3))
+        self.checkState(state, "31+22___", 1, completion: "=53")
+    }
+    
+    func testClear() throws {
+        var state = GuessInputState(size: 8)
+        
+        state.input(string: "14+52")
+        self.checkState(state, "14+52___", 5, completion: "=66")
+        
+        state.clear()
+        self.checkState(state, "________", 5)
+    }
+    
+    // MARK: Utils
     
     private func checkState(
         _ state: GuessInputState,

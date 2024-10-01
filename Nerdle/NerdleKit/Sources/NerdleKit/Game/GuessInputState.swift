@@ -112,8 +112,13 @@ public struct GuessInputState: CustomStringConvertible {
         }
     }
 
-    public mutating func setCharacters(_ characters: [ExpressionCharacter]) {
-        self.characters = characters
+    public mutating func substituteLastGuess(_ guess: Equation) {
+        precondition(guess.characters.count == self.size)
+        
+        // Trim last guess till "=" sign, so autocompletion will work
+        let lastGuessCharacters = guess.characters
+        let characters: [ExpressionCharacter?] = lastGuessCharacters.prefix(while: { $0 != .equals })
+        self.characters = characters + Array(repeating: nil, count: self.size - characters.count)
     }
     
     public mutating func clear() {
@@ -132,9 +137,9 @@ public struct GuessInputState: CustomStringConvertible {
     
     // MARK: Completion
     
-    public mutating func acceptCompletion() {
+    private mutating func acceptCompletion() {
         guard let completion else {
-            return
+            preconditionFailure()
         }
         
         for index in 0..<completion.count {

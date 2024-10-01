@@ -97,7 +97,7 @@ final class GameViewModel: ObservableObject {
                 return false
             }
             
-            self.inputState.setCharacters(lastGuess.equation.characters)
+            self.inputState.substituteLastGuess(lastGuess.equation)
             
         case .clear:
             self.inputState.clear()
@@ -142,7 +142,22 @@ final class GameViewModel: ObservableObject {
         self.resetInputState()
     }
     
+    func loadGame(id: GameID) {
+        do {
+            self.gameState = try self.databaseController.read { db in
+                try db.gameState(id: id)
+            }
+            
+            self.resetInputState()
+        }
+        catch {
+            print("Failled to load game: \(error)")
+        }
+    }
+    
     func makeHistoryViewModel() -> HistoryViewModel {
-        HistoryViewModel(databaseController: self.databaseController)
+        HistoryViewModel(databaseController: self.databaseController) { [weak self] in
+            self?.loadGame(id: $0)
+        }
     }
 }
