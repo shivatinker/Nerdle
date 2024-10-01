@@ -32,7 +32,6 @@ final class GameViewModel: ObservableObject {
     
     @Published private(set) var gameState: GameState!
     @Published private(set) var inputState: GuessInputState!
-    @Published var isHistoryVisible = false
     
     var difficulty: GameDifficulty {
         self.settingsController.settings.difficulty
@@ -199,6 +198,24 @@ final class GameViewModel: ObservableObject {
     func makeHistoryViewModel() -> HistoryViewModel {
         HistoryViewModel(databaseController: self.databaseController) { [weak self] in
             self?.loadGame(id: $0)
+        }
+    }
+    
+    // MARK: Share
+    
+    var isShareEnabled: Bool {
+        self.gameState.termination != nil
+    }
+    
+    func shareGame() -> String? {
+        precondition(self.isShareEnabled)
+        
+        do {
+            return try self.gameState.export()
+        }
+        catch {
+            print("Failed to export game: \(error)")
+            return nil
         }
     }
     

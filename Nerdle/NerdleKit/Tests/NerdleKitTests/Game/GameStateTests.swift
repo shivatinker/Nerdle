@@ -50,6 +50,24 @@ final class GameStateTests: XCTestCase {
         XCTAssertEqual(state.termination, .lost)
     }
     
+    func testExport() throws {
+        var state = GameState(
+            target: try Equation(string: "12+23=35"),
+            configuration: self.configuration
+        )
+        
+        state.addGuess(equation: try Equation(string: "15+62=77"))
+        state.addGuess(equation: try Equation(string: "12+33=45"))
+        state.addGuess(equation: try Equation(string: "12+23=35"))
+        
+        XCTAssertEqual(try state.export(), """
+        Nerdle [12+23=35]: won
+        🟩🟨🟩⬛🟨🟩⬛⬛
+        🟩🟩🟩🟨🟩🟩⬛🟩
+        🟩🟩🟩🟩🟩🟩🟩🟩
+        """)
+    }
+    
     func testEncoding() throws {
         var state = GameState(
             target: try Equation(string: "12+23=35"),

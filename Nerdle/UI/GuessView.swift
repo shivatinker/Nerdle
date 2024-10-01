@@ -12,7 +12,7 @@ struct GameView: View {
     @StateObject var model: GameViewModel
     
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
             VStack(spacing: 16) {
                 Grid(model: self.model)
                 
@@ -23,10 +23,8 @@ struct GameView: View {
             }
             .padding([.leading, .trailing, .bottom], 16)
             
-            if self.model.isHistoryVisible {
-                Divider()
-                HistoryView(model: self.model.makeHistoryViewModel)
-            }
+            Divider()
+            HistoryView(model: self.model.makeHistoryViewModel)
         }
         .handleKeys(action: self.model.handleKey)
     }

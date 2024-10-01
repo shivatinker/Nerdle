@@ -11,6 +11,7 @@ import SwiftUI
 
 class ViewController: NSViewController {
     private let settingsController = SettingsController()
+    private var titleBarView: NSView!
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -38,6 +39,8 @@ class ViewController: NSViewController {
                 model: model
             )
         )
+        
+        self.titleBarView = titleBar
         
         titleBar.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(titleBar)
@@ -74,6 +77,16 @@ class ViewController: NSViewController {
         self.view.window?.beginSheet(window)
     }
     
+    func presentShareSheet(sharedText: String) {
+        let picker = NSSharingServicePicker(items: [sharedText])
+        
+        picker.show(
+            relativeTo: view.bounds,
+            of: self.titleBarView,
+            preferredEdge: .maxY
+        )
+    }
+    
     private func makeViewModel() throws -> GameViewModel {
         let path = self.dbPath
         
@@ -105,6 +118,10 @@ private final class RootRouter {
     
     func showSettings() {
         self.viewController.showSettings()
+    }
+    
+    func presentShareSheet(sharedText: String) {
+        self.viewController.presentShareSheet(sharedText: sharedText)
     }
 }
 
@@ -142,16 +159,17 @@ private struct TitleBar: View {
                     )
                 }
                 
+                if self.model.isShareEnabled {
+                    ToolbarButton(imageName: "square.and.arrow.up") {
+                        if let text = self.model.shareGame() {
+                            self.router.presentShareSheet(sharedText: text)
+                        }
+                    }
+                }
+                
                 ToolbarButton(
                     imageName: "gearshape.fill",
                     action: self.router.showSettings
-                )
-                
-                ToolbarButton(
-                    imageName: "clock.arrow.trianglehead.counterclockwise.rotate.90",
-                    action: {
-                        self.model.isHistoryVisible.toggle()
-                    }
                 )
             }
             .padding(.trailing, 16)

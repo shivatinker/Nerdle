@@ -21,6 +21,10 @@ public enum GameTermination: String, Codable {
 }
 
 public struct GameState: Codable, Equatable {
+    enum Error: Swift.Error {
+        case notTerminated
+    }
+    
     public let target: Equation
     public let configuration: GameConfiguration
     
@@ -76,6 +80,29 @@ public struct GameState: Codable, Equatable {
         case .wrongPosition: .wrongPosition
         case .incorrect: .incorrect
         }
+    }
+    
+    public func export() throws -> String {
+        guard let termination else {
+            throw Error.notTerminated
+        }
+        
+        return """
+        Nerdle [\(self.target.description)]: \(termination)
+        \(self.guesses.map(self.guessText).joined(separator: "\n"))
+        """
+    }
+    
+    private func guessText(_ guess: Guess) -> String {
+        guess.characters
+            .map {
+                switch $0.state {
+                case .correct: "🟩"
+                case .wrongPosition: "🟨"
+                case .incorrect: "⬛"
+                }
+            }
+            .joined()
     }
 }
 
