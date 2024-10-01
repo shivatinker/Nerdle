@@ -21,7 +21,7 @@ final class GameViewModel: ObservableObject {
         self.gameState.termination == nil
     }
     
-    var isReloadEnabled: Bool {
+    var isNewGameEnabled: Bool {
         self.gameState.termination != nil
     }
     
@@ -33,6 +33,9 @@ final class GameViewModel: ObservableObject {
         self.gameState = GameState(target: target, configuration: configuration)
         self.inputState = GuessInputState(size: configuration.size)
         self.databaseController = databaseController
+        
+        self.loadSavedGameIfPossible()
+        self.subscribeToNotifications()
     }
     
     func inputCellAction(index: Int) {
@@ -129,8 +132,8 @@ final class GameViewModel: ObservableObject {
         self.inputState = GuessInputState(size: self.gameState.configuration.size)
     }
     
-    func reloadGame() {
-        precondition(self.isReloadEnabled)
+    func startNewGame() {
+        precondition(self.isNewGameEnabled)
         
         self.gameState = GameState(
             target: EquationGenerator.generateRandomEquation(
@@ -159,5 +162,54 @@ final class GameViewModel: ObservableObject {
         HistoryViewModel(databaseController: self.databaseController) { [weak self] in
             self?.loadGame(id: $0)
         }
+    }
+    
+    // MARK: State loading
+    
+    private static let savedGameKey = "savedGame"
+    
+    private func loadSavedGameIfPossible() {
+        guard let data = UserDefaults.standard.data(forKey: GameViewModel.savedGameKey) else {
+            return
+        }
+        
+        do {
+            self.gameState = try JSONDecoder().decode(GameState.self, from: data)
+        }
+        catch {
+            print("Failed to load saved game state: \(error)")
+        }
+        
+        UserDefaults.standard.removeObject(forKey: GameViewModel.savedGameKey)
+    }
+    
+    private func saveGameIfNeeded() {
+        if self.gameState.termination == nil {
+            do {
+                let data = try JSONEncoder().encode(self.gameState)
+                UserDefaults.standard.set(data, forKey: GameViewModel.savedGameKey)
+            }
+            catch {
+                print("Failed to save game state: \(error)")
+            }
+        }
+    }
+    
+    // MARK: Notifications
+    
+    func subscribeToNotifications() {
+        let notificationCenter = NotificationCenter.default
+        
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(self.applicationWillTerminate),
+            name: NSApplication.willTerminateNotification,
+            object: nil
+        )
+    }
+    
+    @objc
+    private func applicationWillTerminate() {
+        self.saveGameIfNeeded()
     }
 }

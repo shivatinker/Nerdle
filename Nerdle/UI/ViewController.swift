@@ -90,19 +90,19 @@ struct TitleBar: View {
             HStack {
                 Spacer()
                 
+                if self.model.isNewGameEnabled {
+                    ToolbarButton(
+                        imageName: "plus",
+                        action: self.model.startNewGame
+                    )
+                }
+                
                 ToolbarButton(
                     imageName: "clock.arrow.trianglehead.counterclockwise.rotate.90",
                     action: {
                         self.model.isHistoryVisible.toggle()
                     }
                 )
-                
-                if self.model.isReloadEnabled {
-                    ToolbarButton(
-                        imageName: "arrow.trianglehead.2.clockwise.rotate.90",
-                        action: self.model.reloadGame
-                    )
-                }
             }
             .padding(.trailing, 16)
         }

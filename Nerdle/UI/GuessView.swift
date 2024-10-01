@@ -28,6 +28,7 @@ struct GameView: View {
                 HistoryView(model: self.model.makeHistoryViewModel)
             }
         }
+        .handleKeys(action: self.model.handleKey)
     }
 }
 
@@ -58,7 +59,6 @@ struct Grid: View {
                 }
             }
         }
-        .handleKeys(action: self.model.handleKey)
     }
     
     private func makeInputViewCharacters() -> [CharacterModel] {
