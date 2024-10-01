@@ -13,6 +13,7 @@ final class SettingsController {
     var settings: Settings {
         didSet {
             self._settingsDidChange.send()
+            self.save()
         }
     }
     
