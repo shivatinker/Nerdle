@@ -57,6 +57,7 @@ struct Grid: View {
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: self.model.gameState)
     }
     
     private func makeInputViewCharacters() -> [CharacterModel] {
