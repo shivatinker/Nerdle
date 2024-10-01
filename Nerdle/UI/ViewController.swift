@@ -10,6 +10,8 @@ import NerdleKit
 import SwiftUI
 
 class ViewController: NSViewController {
+    private let settingsController = SettingsController()
+    
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -28,7 +30,15 @@ class ViewController: NSViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(view)
         
-        let titleBar = NSHostingView(rootView: TitleBar(model: model))
+        let router = RootRouter(viewController: self)
+        
+        let titleBar = NSHostingView(
+            rootView: TitleBar(
+                router: router,
+                model: model
+            )
+        )
+        
         titleBar.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(titleBar)
         
@@ -47,18 +57,31 @@ class ViewController: NSViewController {
         self.view = container
     }
     
+    func showSettings() {
+        let window = NSWindow()
+        window.styleMask = [.closable, .titled]
+        window.titlebarAppearsTransparent = true
+        
+        let bridge = ModalWindowBridge(window: window)
+        
+        window.contentViewController = NSHostingController(
+            rootView: SettingsView(
+                modalBridge: bridge,
+                controller: self.settingsController
+            )
+        )
+        
+        self.view.window?.beginSheet(window)
+    }
+    
     private func makeViewModel() throws -> GameViewModel {
         let path = self.dbPath
         
         print("DB Path: \(path ?? "<nil>")")
         
         return try GameViewModel(
-            target: EquationGenerator.generateRandomEquation(size: 8),
-            configuration: GameConfiguration(
-                size: 8,
-                maxGuesses: 6
-            ),
-            databaseController: DatabaseController(path: path)
+            databaseController: DatabaseController(path: path),
+            settingsController: self.settingsController
         )
     }
     
@@ -72,7 +95,29 @@ class ViewController: NSViewController {
     }
 }
 
-struct TitleBar: View {
+@MainActor
+private final class RootRouter {
+    private unowned let viewController: ViewController
+    
+    init(viewController: ViewController) {
+        self.viewController = viewController
+    }
+    
+    func showSettings() {
+        self.viewController.showSettings()
+    }
+}
+
+final class ModalWindowBridge {
+    unowned let window: NSWindow
+    
+    init(window: NSWindow) {
+        self.window = window
+    }
+}
+
+private struct TitleBar: View {
+    let router: RootRouter
     @StateObject var model: GameViewModel
     
     var body: some View {
@@ -96,6 +141,11 @@ struct TitleBar: View {
                         action: self.model.startNewGame
                     )
                 }
+                
+                ToolbarButton(
+                    imageName: "gearshape.fill",
+                    action: self.router.showSettings
+                )
                 
                 ToolbarButton(
                     imageName: "clock.arrow.trianglehead.counterclockwise.rotate.90",

@@ -9,13 +9,34 @@ import AppKit
 import Combine
 import NerdleKit
 
+enum GameDifficulty: CaseIterable, Codable {
+    case easy
+    case medium
+    case hard
+    
+    func makeConfiguration() -> GameConfiguration {
+        switch self {
+        case .easy: GameConfiguration(size: 6, maxGuesses: 6)
+        case .medium: GameConfiguration(size: 8, maxGuesses: 6)
+        case .hard: GameConfiguration(size: 10, maxGuesses: 6)
+        }
+    }
+}
+
 @MainActor
 final class GameViewModel: ObservableObject {
+    private var subscriptions: Set<AnyCancellable> = []
+    
+    private let settingsController: SettingsController
     private let databaseController: DatabaseController
     
-    @Published private(set) var gameState: GameState
-    @Published private(set) var inputState: GuessInputState
+    @Published private(set) var gameState: GameState!
+    @Published private(set) var inputState: GuessInputState!
     @Published var isHistoryVisible = false
+    
+    var difficulty: GameDifficulty {
+        self.settingsController.settings.difficulty
+    }
     
     var isInputEnabled: Bool {
         self.gameState.termination == nil
@@ -26,16 +47,24 @@ final class GameViewModel: ObservableObject {
     }
     
     init(
-        target: Equation,
-        configuration: GameConfiguration,
-        databaseController: DatabaseController
+        databaseController: DatabaseController,
+        settingsController: SettingsController
     ) {
-        self.gameState = GameState(target: target, configuration: configuration)
-        self.inputState = GuessInputState(size: configuration.size)
         self.databaseController = databaseController
+        self.settingsController = settingsController
+        
+        self.gameState = Self.makeNewGameState(difficulty: self.difficulty)
+        self.inputState = GuessInputState(size: self.gameState.configuration.size)
         
         self.loadSavedGameIfPossible()
         self.subscribeToNotifications()
+        
+        self.settingsController.settingsDidChange
+            .sink { [weak self] in
+                self?.objectWillChange.send()
+                self?.startNewGameIfNotStarted()
+            }
+            .store(in: &self.subscriptions)
     }
     
     func inputCellAction(index: Int) {
@@ -133,16 +162,25 @@ final class GameViewModel: ObservableObject {
     }
     
     func startNewGame() {
-        precondition(self.isNewGameEnabled)
-        
-        self.gameState = GameState(
-            target: EquationGenerator.generateRandomEquation(
-                size: self.gameState.configuration.size
-            ),
-            configuration: self.gameState.configuration
-        )
-        
+        self.gameState = Self.makeNewGameState(difficulty: self.difficulty)
         self.resetInputState()
+    }
+    
+    private func startNewGameIfNotStarted() {
+        if self.gameState.guesses.isEmpty {
+            self.startNewGame()
+        }
+    }
+    
+    private static func makeNewGameState(difficulty: GameDifficulty) -> GameState {
+        let configuration = difficulty.makeConfiguration()
+        
+        return GameState(
+            target: EquationGenerator.generateRandomEquation(
+                size: configuration.size
+            ),
+            configuration: configuration
+        )
     }
     
     func loadGame(id: GameID) {
@@ -175,6 +213,7 @@ final class GameViewModel: ObservableObject {
         
         do {
             self.gameState = try JSONDecoder().decode(GameState.self, from: data)
+            self.resetInputState()
         }
         catch {
             print("Failed to load saved game state: \(error)")
