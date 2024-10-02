@@ -12,9 +12,11 @@ import SwiftUI
 class ViewController: NSViewController {
     private let settingsController = SettingsController()
     private var titleBarView: NSView!
+    private var model: GameViewModel!
     
     init() {
         super.init(nibName: nil, bundle: nil)
+        self.model = try! self.makeViewModel()
     }
     
     @available(*, unavailable)
@@ -23,10 +25,8 @@ class ViewController: NSViewController {
     }
     
     override func loadView() {
-        let model = try! self.makeViewModel()
-        
         let container = NSView()
-        let view = NSHostingView(rootView: GameView(model: model))
+        let view = NSHostingView(rootView: GameView(model: self.model))
         
         view.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(view)
@@ -36,7 +36,7 @@ class ViewController: NSViewController {
         let titleBar = NSHostingView(
             rootView: TitleBar(
                 router: router,
-                model: model
+                model: self.model
             )
         )
         
@@ -107,6 +107,34 @@ class ViewController: NSViewController {
         }
         
         return url.appending(component: "nerdle.db").path(percentEncoded: false)
+    }
+    
+    @objc
+    private func loadCustomGame(_ sender: Any) {
+        guard let clipboardText = NSPasteboard.general.string(forType: .string) else {
+            self.showError("No equation text in clipboard")
+            return
+        }
+        
+        do {
+            let equation = try Equation(string: clipboardText)
+            self.model.startCustomGame(equation: equation)
+        }
+        catch {
+            self.showError("Invalid equation", "\(clipboardText)\n\n\(error)")
+        }
+    }
+    
+    private func showError(_ messageText: String, _ informativeText: String? = nil) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = messageText
+        
+        if let informativeText {
+            alert.informativeText = informativeText
+        }
+        
+        alert.runModal()
     }
 }
 

@@ -180,6 +180,19 @@ final class GameViewModel: ObservableObject {
     
     // MARK: Game Loading
     
+    func startCustomGame(equation: Equation) {
+        self.loadGame(
+            state: GameState(
+                target: equation,
+                configuration: GameConfiguration(
+                    size: equation.characters.count,
+                    maxGuesses: 6
+                )
+            ),
+            mode: .practice
+        )
+    }
+    
     func startNewPracticeGame() {
         self.loadGame(
             state: Self.makeNewGameState(difficulty: self.difficulty),
