@@ -54,8 +54,8 @@ final class GameDatabaseTests: XCTestCase {
         XCTAssertEqual(games[safe: 1]?.mode, .practice)
         
         try controller.read { db in
-            XCTAssertNotNil(try db.gameState(day: try Day(string: "2024-9-27")))
-            XCTAssertNil(try db.gameState(day: try Day(string: "2024-9-28")))
+            XCTAssertNotNil(try db.game(day: try Day(string: "2024-9-27")))
+            XCTAssertNil(try db.game(day: try Day(string: "2024-9-28")))
         }
     }
 
