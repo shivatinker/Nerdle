@@ -30,6 +30,37 @@ final class GameDatabaseTests: XCTestCase {
         XCTAssertEqual(games[safe: 1]?.termination, .won)
     }
     
+    func testDailyGameLogging() throws {
+        let controller = try DatabaseController(path: nil)
+        
+        try controller.write { db in
+            try db.logGame(
+                state: self.makeWonGame(),
+                date: Date(timeIntervalSince1970: 1727610396),
+                mode: .practice
+            )
+            
+            try db.logGame(
+                state: self.makeLostGame(),
+                date: Date(timeIntervalSince1970: 1727610440),
+                mode: .daily(try Day(string: "2024-9-27"))
+            )
+        }
+        
+        let games = try controller.read { db in
+            try db.allGames()
+        }
+        
+        XCTAssertEqual(games.count, 2)
+        XCTAssertEqual(games[safe: 0]?.mode, .daily(try Day(string: "2024-9-27")))
+        XCTAssertEqual(games[safe: 1]?.mode, .practice)
+        
+        try controller.read { db in
+            XCTAssertNotNil(try db.gameState(day: try Day(string: "2024-9-27")))
+            XCTAssertNil(try db.gameState(day: try Day(string: "2024-9-28")))
+        }
+    }
+
     func testStats() throws {
         let controller = try DatabaseController(path: nil)
         

@@ -30,6 +30,7 @@ final class GameViewModel: ObservableObject {
     private let settingsController: SettingsController
     private let databaseController: DatabaseController
     
+    @Published private(set) var mode: GameMode = .practice
     @Published private(set) var gameState: GameState!
     @Published private(set) var inputState: GuessInputState!
     
@@ -52,16 +53,16 @@ final class GameViewModel: ObservableObject {
         self.databaseController = databaseController
         self.settingsController = settingsController
         
-        self.gameState = Self.makeNewGameState(difficulty: self.difficulty)
-        self.inputState = GuessInputState(size: self.gameState.configuration.size)
+        if false == self.loadSavedGameIfPossible() {
+            self.loadCurrentDailyGame()
+        }
         
-        self.loadSavedGameIfPossible()
         self.subscribeToNotifications()
         
         self.settingsController.settingsDidChange
             .sink { [weak self] in
                 self?.objectWillChange.send()
-                self?.startNewGameIfNotStarted()
+                self?.handleDifficultyChange()
             }
             .store(in: &self.subscriptions)
     }
@@ -99,7 +100,7 @@ final class GameViewModel: ObservableObject {
             if self.gameState.termination != nil {
                 do {
                     try self.databaseController.write { db in
-                        let id = try db.logGame(state: self.gameState, date: .now)
+                        let id = try db.logGame(state: self.gameState, date: .now, mode: self.mode)
                         print("Saved game with id \(id)")
                     }
                 }
@@ -160,17 +161,6 @@ final class GameViewModel: ObservableObject {
         self.inputState = GuessInputState(size: self.gameState.configuration.size)
     }
     
-    func startNewGame() {
-        self.gameState = Self.makeNewGameState(difficulty: self.difficulty)
-        self.resetInputState()
-    }
-    
-    private func startNewGameIfNotStarted() {
-        if self.gameState.guesses.isEmpty {
-            self.startNewGame()
-        }
-    }
-    
     private static func makeNewGameState(difficulty: GameDifficulty) -> GameState {
         let configuration = difficulty.makeConfiguration()
         
@@ -182,23 +172,66 @@ final class GameViewModel: ObservableObject {
         )
     }
     
+    func makeHistoryViewModel() -> HistoryViewModel {
+        HistoryViewModel(databaseController: self.databaseController) { [weak self] in
+            self?.loadGame(id: $0)
+        }
+    }
+    
+    // MARK: Game Loading
+    
+    func startNewPracticeGame() {
+        self.loadGame(
+            state: Self.makeNewGameState(difficulty: self.difficulty),
+            mode: .practice
+        )
+    }
+    
+    private func handleDifficultyChange() {
+        if self.gameState.guesses.isEmpty, self.mode == .practice {
+            self.startNewPracticeGame()
+        }
+    }
+    
+    func loadCurrentDailyGame() {
+        let day = Day(date: .now)
+        
+        let game = try? self.databaseController.read { db in
+            try db.game(day: day)
+        }
+        
+        if let game {
+            self.loadGame(state: game.state, mode: game.mode)
+            return
+        }
+        
+        let configuration = GameDifficulty.medium.makeConfiguration()
+        
+        let state = GameState(
+            target: EquationGenerator.generateDailyEquation(day: day, size: configuration.size),
+            configuration: configuration
+        )
+        
+        self.loadGame(state: state, mode: .daily(day))
+    }
+    
     func loadGame(id: GameID) {
         do {
-            self.gameState = try self.databaseController.read { db in
-                try db.gameState(id: id)
+            let game = try self.databaseController.read { db in
+                try db.game(id: id)
             }
             
-            self.resetInputState()
+            self.loadGame(state: game.state, mode: game.mode)
         }
         catch {
             print("Failled to load game: \(error)")
         }
     }
     
-    func makeHistoryViewModel() -> HistoryViewModel {
-        HistoryViewModel(databaseController: self.databaseController) { [weak self] in
-            self?.loadGame(id: $0)
-        }
+    private func loadGame(state: GameState, mode: GameMode) {
+        self.gameState = state
+        self.mode = mode
+        self.resetInputState()
     }
     
     // MARK: Share
@@ -223,24 +256,31 @@ final class GameViewModel: ObservableObject {
     
     private static let savedGameKey = "savedGame"
     
-    private func loadSavedGameIfPossible() {
+    private func loadSavedGameIfPossible() -> Bool {
         guard let data = UserDefaults.standard.data(forKey: GameViewModel.savedGameKey) else {
-            return
+            return false
+        }
+        
+        defer {
+            UserDefaults.standard.removeObject(forKey: GameViewModel.savedGameKey)
         }
         
         do {
-            self.gameState = try JSONDecoder().decode(GameState.self, from: data)
-            self.resetInputState()
+            self.loadGame(
+                state: try JSONDecoder().decode(GameState.self, from: data),
+                mode: .practice // FIX!!!
+            )
+            
+            return true
         }
         catch {
             print("Failed to load saved game state: \(error)")
+            return false
         }
-        
-        UserDefaults.standard.removeObject(forKey: GameViewModel.savedGameKey)
     }
     
     private func saveGameIfNeeded() {
-        if self.gameState.termination == nil {
+        if self.gameState.termination == nil, self.gameState.guesses.isEmpty == false {
             do {
                 let data = try JSONEncoder().encode(self.gameState)
                 UserDefaults.standard.set(data, forKey: GameViewModel.savedGameKey)

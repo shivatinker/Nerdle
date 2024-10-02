@@ -15,6 +15,13 @@ final class EquationGeneratorTests: XCTestCase {
         self.check(size: 15)
     }
     
+    func testDailyEquation() {
+        let date = Date(timeIntervalSince1970: 1727879909)
+        let day = Day(date: date)
+        let equation = EquationGenerator.generateDailyEquation(day: day, size: 8)
+        XCTAssertEqual(equation.description, "47*7=329")
+    }
+    
     private func check(size: Int) {
         let count = 100
         var generator = EquationGenerator(seed: 42)

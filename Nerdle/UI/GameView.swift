@@ -1,5 +1,5 @@
 //
-//  GuessView.swift
+//  GameView.swift
 //  Nerdle
 //
 //  Created by Andrii Zinoviev on 26.09.2024.
@@ -13,24 +13,41 @@ struct GameView: View {
     
     var body: some View {
         HStack(spacing: 0) {
+            HistoryView(model: self.model.makeHistoryViewModel)
+            
+            Divider()
+            
             VStack(spacing: 16) {
                 Grid(model: self.model)
-                
+                    
                 InputPanel(
                     states: self.model.gameState.characterGameStates(),
                     action: self.model.handleInputPanelAction
                 )
+                    
+                Text(self.modeText)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(idealWidth: 0)
             }
             .padding([.leading, .trailing, .bottom], 16)
-            
-            Divider()
-            HistoryView(model: self.model.makeHistoryViewModel)
         }
         .handleKeys(action: self.model.handleKey)
     }
+    
+    private var modeText: String {
+        switch self.model.mode {
+        case let .daily(day):
+            "Daily Nerdle for \(day)"
+            
+        case .practice:
+            "Practice mode"
+        }
+    }
 }
 
-struct Grid: View {
+private struct Grid: View {
     @ObservedObject var model: GameViewModel
     
     var body: some View {

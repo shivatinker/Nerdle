@@ -18,6 +18,12 @@ public struct EquationGenerator {
         return generator.generateEquation(size: size, maxAttempts: Self.maxAttempts)
     }
     
+    public static func generateDailyEquation(day: Day, size: Int) -> Equation {
+        let seed = UInt64(day.year * 10000 + day.month * 100 + day.day)
+        var generator = EquationGenerator(seed: seed)
+        return generator.generateEquation(size: size, maxAttempts: Self.maxAttempts)
+    }
+    
     public mutating func generateEquations(size: Int, count: Int) -> [Equation] {
         var result: [Equation] = []
         

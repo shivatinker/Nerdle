@@ -57,6 +57,12 @@ public final class DatabaseController {
             }
         }
         
+        migrator.registerMigration("v1,1") { db in
+            try db.alter(table: "game_history") { table in
+                table.add(column: "dailyGameDate", .text)
+            }
+        }
+        
         return migrator
     }
 }

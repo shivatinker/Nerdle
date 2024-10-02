@@ -24,7 +24,8 @@ struct HistoryView: View {
                     termination: item.termination,
                     date: item.date,
                     configuraiton: item.state.configuration,
-                    guessCount: item.state.guesses.count
+                    guessCount: item.state.guesses.count,
+                    mode: item.mode
                 )
             },
             stats: self.model.stats,
@@ -94,12 +95,20 @@ private struct HistoryListItem: View, @preconcurrency Identifiable {
     let date: Date
     let configuraiton: GameConfiguration
     let guessCount: Int
+    let mode: GameMode
     
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
-                self.terminationText
-                    .font(.system(size: 14, weight: .semibold))
+                HStack(spacing: 4) {
+                    self.terminationText
+                        .font(.system(size: 14, weight: .semibold))
+                    
+                    self.modeBadge
+                        .font(.system(size: 12, weight: .light))
+                        .foregroundStyle(.secondary)
+                }
+                
                 DynamicRelativeDate(date: self.date)
                     .font(.subheadline)
             }
@@ -118,6 +127,17 @@ private struct HistoryListItem: View, @preconcurrency Identifiable {
         )
         .onHover {
             self.isHovered = $0
+        }
+    }
+    
+    @ViewBuilder
+    private var modeBadge: some View {
+        switch self.mode {
+        case .daily:
+            Text("daily")
+            
+        case .practice:
+            Text("practice")
         }
     }
     
@@ -170,21 +190,24 @@ private struct DifficultyIndicator: View {
                 termination: .won,
                 date: Date(timeIntervalSince1970: 1727610440),
                 configuraiton: GameConfiguration(size: 6, maxGuesses: 6),
-                guessCount: 4
+                guessCount: 4,
+                mode: .practice
             ),
             HistoryListItem(
                 id: 1,
                 termination: .lost,
                 date: Date(timeIntervalSince1970: 1727610396),
                 configuraiton: GameConfiguration(size: 8, maxGuesses: 6),
-                guessCount: 6
+                guessCount: 6,
+                mode: .daily(try! Day(string: "2024-9-27"))
             ),
             HistoryListItem(
                 id: 3,
                 termination: .won,
                 date: Date(timeIntervalSince1970: 1727610396),
                 configuraiton: GameConfiguration(size: 10, maxGuesses: 6),
-                guessCount: 5
+                guessCount: 5,
+                mode: .daily(try! Day(string: "2024-9-26"))
             ),
         ],
         stats: HistoryStats(

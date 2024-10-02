@@ -42,6 +42,8 @@ class ViewController: NSViewController {
         
         self.titleBarView = titleBar
         
+        titleBar.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
+        
         titleBar.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(titleBar)
         
@@ -49,7 +51,7 @@ class ViewController: NSViewController {
             titleBar.topAnchor.constraint(equalTo: container.topAnchor),
             titleBar.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             titleBar.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            titleBar.heightAnchor.constraint(equalToConstant: 48),
+            titleBar.heightAnchor.constraint(equalToConstant: 54),
             
             view.topAnchor.constraint(equalTo: titleBar.bottomAnchor),
             view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
@@ -155,7 +157,7 @@ private struct TitleBar: View {
                 if self.model.isNewGameEnabled {
                     ToolbarButton(
                         imageName: "plus",
-                        action: self.model.startNewGame
+                        action: self.model.startNewPracticeGame
                     )
                 }
                 
@@ -166,6 +168,11 @@ private struct TitleBar: View {
                         }
                     }
                 }
+                
+                ToolbarButton(
+                    imageName: "calendar",
+                    action: self.model.loadCurrentDailyGame
+                )
                 
                 ToolbarButton(
                     imageName: "gearshape.fill",

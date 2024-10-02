@@ -24,23 +24,31 @@ private struct GameHistoryItemRow: Codable, FetchableRecord, MutablePersistableR
     static let databaseTableName = "game_history"
     
     enum Columns {
-        static let date = Column("date")
+        static let date = Column(CodingKeys.date)
+        static let dailyGameDate = Column(CodingKeys.dailyGameDate)
     }
     
     public var id: GameID?
     public var date: Date
     public var state: GameState
     public var termination: GameTermination
+    public var dailyGameDate: Day?
     
     mutating func didInsert(_ inserted: InsertionSuccess) {
         self.id = GameID(rawValue: inserted.rowID)
     }
 }
 
+public enum GameMode: Codable, Equatable, DatabaseValueConvertible {
+    case daily(Day)
+    case practice
+}
+
 public struct GameHistoryItem: Identifiable {
     public let id: GameID
     public let date: Date
     public let state: GameState
+    public let mode: GameMode
     public let termination: GameTermination
 }
 
@@ -66,7 +74,7 @@ public struct GameDatabase {
     }
     
     @discardableResult
-    public func logGame(state: GameState, date: Date) throws -> GameID {
+    public func logGame(state: GameState, date: Date, mode: GameMode = .practice) throws -> GameID {
         guard let termination = state.termination else {
             throw Error.notFinished
         }
@@ -74,7 +82,8 @@ public struct GameDatabase {
         var row = GameHistoryItemRow(
             date: date,
             state: state,
-            termination: termination
+            termination: termination,
+            dailyGameDate: self.dailyGameDate(mode: mode)
         )
         
         try row.save(self.db)
@@ -87,18 +96,48 @@ public struct GameDatabase {
             .order(GameHistoryItemRow.Columns.date.desc)
             .fetchAll(self.db)
         
-        return try rows.map {
-            GameHistoryItem(
-                id: try $0.id.unwrap(),
-                date: $0.date,
-                state: $0.state,
-                termination: $0.termination
-            )
+        return try rows.map(self.historyItem)
+    }
+    
+    private func dailyGameDate(mode: GameMode) -> Day? {
+        switch mode {
+        case let .daily(day):
+            return day
+        case .practice:
+            return nil
         }
     }
     
-    public func gameState(id: GameID) throws -> GameState {
-        try GameHistoryItemRow.fetchOne(self.db, key: id).unwrap().state
+    private func gameMode(day: Day?) -> GameMode {
+        if let day {
+            return .daily(day)
+        }
+        else {
+            return .practice
+        }
+    }
+    
+    public func game(day: Day) throws -> GameHistoryItem? {
+        try GameHistoryItemRow
+            .filter(GameHistoryItemRow.Columns.dailyGameDate == day)
+            .fetchOne(self.db)
+            .map(self.historyItem)
+    }
+    
+    public func game(id: GameID) throws -> GameHistoryItem {
+        try GameHistoryItemRow.fetchOne(self.db, key: id)
+            .map(self.historyItem)
+            .unwrap()
+    }
+    
+    private func historyItem(_ row: GameHistoryItemRow) throws -> GameHistoryItem {
+        GameHistoryItem(
+            id: try row.id.unwrap(),
+            date: row.date,
+            state: row.state,
+            mode: self.gameMode(day: row.dailyGameDate),
+            termination: row.termination
+        )
     }
     
     public func stats() throws -> HistoryStats {
