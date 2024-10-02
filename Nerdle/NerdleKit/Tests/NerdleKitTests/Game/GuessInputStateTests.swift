@@ -2,8 +2,6 @@
 //  GuessInputStateTests.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 27.09.2024.
-//
 
 @testable import NerdleKit
 import XCTest

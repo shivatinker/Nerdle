@@ -2,8 +2,6 @@
 //  DatabaseController.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 29.09.2024.
-//
 
 import Combine
 import GRDB

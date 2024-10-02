@@ -2,8 +2,6 @@
 //  InputPanel.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 27.09.2024.
-//
 
 import NerdleKit
 import SwiftUI

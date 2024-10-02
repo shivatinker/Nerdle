@@ -2,8 +2,6 @@
 //  EquationGenerator.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 public struct EquationGenerator {
     private static let maxAttempts: Int = 1000

@@ -2,8 +2,6 @@
 //  GuessInputState.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 27.09.2024.
-//
 
 public struct GuessInputState: CustomStringConvertible {
     public let size: Int

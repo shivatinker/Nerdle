@@ -2,8 +2,6 @@
 //  HistoryView.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 29.09.2024.
-//
 
 import Combine
 import NerdleKit
@@ -41,20 +39,23 @@ private struct HistoryViewContent: View {
     
     var body: some View {
         VStack {
-            List(self.items) { item in
-                item
-                    .listRowBackground(Color.clear)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        self.action(item.id)
-                    }
-            }
-            .listStyle(.plain)
-            .listRowBackground(Color.clear)
-            .scrollContentBackground(.hidden)
-            
             if let stats, stats.gamesPlayed > 0 {
+                List(self.items) { item in
+                    item
+                        .listRowBackground(Color.clear)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            self.action(item.id)
+                        }
+                }
+                .listStyle(.plain)
+                .listRowBackground(Color.clear)
+                .scrollContentBackground(.hidden)
+            
                 StatsView(stats: stats)
+            }
+            else {
+                Text("No games =(")
             }
         }
         .frame(width: 200)

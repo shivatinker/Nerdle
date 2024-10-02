@@ -2,8 +2,6 @@
 //  ExpressionValidator.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 enum ExpressionValidator {
     enum Error: Swift.Error {

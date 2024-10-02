@@ -2,8 +2,6 @@
 //  Array+NerdleKit.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 27.09.2024.
-//
 
 extension Array {
     public subscript(safe index: Int) -> Element? {

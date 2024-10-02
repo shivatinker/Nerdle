@@ -2,8 +2,6 @@
 //  Day.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 02.10.2024.
-//
 
 import Foundation
 import GRDB

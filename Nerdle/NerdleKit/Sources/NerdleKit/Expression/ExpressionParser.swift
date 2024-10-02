@@ -2,8 +2,6 @@
 //  ExpressionParser.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 struct ExpressionParser {
     struct TopLevel: Equatable {

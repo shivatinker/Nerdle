@@ -2,8 +2,6 @@
 //  DynamicRelativeDate.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 29.09.2024.
-//
 
 import SwiftUI
 

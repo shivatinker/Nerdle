@@ -2,8 +2,6 @@
 //  SettingsController.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 01.10.2024.
-//
 
 import Combine
 import Foundation

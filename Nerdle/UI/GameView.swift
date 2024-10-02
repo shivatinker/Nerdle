@@ -2,8 +2,6 @@
 //  GameView.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 import NerdleKit
 import SwiftUI

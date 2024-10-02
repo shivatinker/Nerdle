@@ -2,8 +2,6 @@
 //  main.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 import AppKit
 

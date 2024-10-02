@@ -2,8 +2,6 @@
 //  ExpressionLexer.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 public enum ExpressionCharacter: Hashable, CustomStringConvertible, Sendable {
     case digit(Int)

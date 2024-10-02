@@ -2,8 +2,6 @@
 //  Equation.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 public struct Equation: Codable, CustomStringConvertible, Equatable {
     public let characters: [ExpressionCharacter]

@@ -2,8 +2,6 @@
 //  ExpressionParserTests.swift
 //  NerdleKit
 //
-//  Created by Andrii Zinoviev on 26.09.2024.
-//
 
 @testable import NerdleKit
 import XCTest

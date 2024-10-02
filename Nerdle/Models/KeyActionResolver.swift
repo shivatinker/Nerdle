@@ -2,8 +2,6 @@
 //  KeyActionResolver.swift
 //  Nerdle
 //
-//  Created by Andrii Zinoviev on 27.09.2024.
-//
 
 import AppKit
 import Carbon
