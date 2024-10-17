@@ -1,6 +1,10 @@
+![Screenshot-2](https://github.com/user-attachments/assets/2ef50935-acce-42c7-aecb-4d082f0b13f3)
+![Screenshot-1](https://github.com/user-attachments/assets/83f912da-6779-4aae-934e-c09a3f574696)
+
 ### How to build
 - I built this project using Xcode Version 16.0 (16A242) and tested it on macOS 15.1 Beta (24B5035e). 
-- If you have any issues, feel free to contact me. 
+- If you have any issues, feel free to contact me.
+- 
 ### Features
 - Game logic for arbitrary sizes and guess counts.
 - Autocompletion for equation input. It suggests the part after "=" sign. Try it out, it is pretty cool little feature!
